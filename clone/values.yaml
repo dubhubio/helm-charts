@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: "<your-image-repository>"
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 5432
+
+env:
+  - name: PASSWORD
+    value: "<your-password>"
+  - name: U
+    value: "<your-U-value>"
+
+imagePullSecrets:
+  - name: "<your-secret-name>"

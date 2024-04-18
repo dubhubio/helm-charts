@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: "<your-image-repository>"
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 5432
+
+env:
+  - name: PASSWORD
+    value: "<your-password>"
+  - name: U
+    value: "<your-U-value>"
+  - name: UUID
+    value: ""
+
+imagePullSecrets:
+  - name: "<your-secret-name>"
+
+persistentVolume:
+  name: "dubhub-pvc"
+  size: 100Gi
+  awsElasticBlockStore:
+    volumeID: "<your-volume-id>"
+    fsType: "<fstype>"

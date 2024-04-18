@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Values.persistentVolume.name }}"
+spec:
+  capacity:
+    storage: "{{ .Values.persistentVolume.size }}"
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  awsElasticBlockStore:
+    volumeID: "{{ .Values.persistentVolume.awsElasticBlockStore.volumeID }}"
+    fsType: "{{ .Values.persistentVolume.awsElasticBlockStore.fsType }}"

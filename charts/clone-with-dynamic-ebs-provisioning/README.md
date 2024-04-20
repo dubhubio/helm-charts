@@ -7,12 +7,13 @@ This Helm chart deploys the dubhub `clone` application in a Kubernetes cluster, 
 - Kubernetes 1.12+
 - Helm 3.0+
 - Access to an ECR that hosts a dubhub snapshot image
+- A storage class to provision persistent volumes, see configs/storge-class.yaml
 
 ## Installing the Chart
 
 To install the chart with the release name `my-release`, use the following command:
 
-    helm install my-release ./clone
+    helm install my-release ./clone-with-dynamic-ebs-provisioning
 
 ## Uninstalling the Chart
 
@@ -26,18 +27,22 @@ This command removes all the Kubernetes components associated with the chart and
 
 The following table lists the configurable parameters of the `dubhub-clone` chart and their default values.
 
-| Parameter                  | Description                                        | Default                    |
-|----------------------------|----------------------------------------------------|----------------------------|
-| `image.repository`         | Image repository                                   | `<your-ecr>`  |
-| `image.pullPolicy`         | Image pull policy                                  | `IfNotPresent`             |
-| `image.tag`                | Image tag (defaults to Chart's `appVersion`)       | `latest`                   |
-| `service.type`             | Kubernetes Service type                            | `ClusterIP`                |
-| `service.port`             | Kubernetes Service port                            | `5432`                     |
-| `env[0].name`              | Environment variable name for the password         | `PASSWORD`                 |
-| `env[0].value`             | Environment variable value for the password        | `<your-password>`          |
-| `env[1].name`              | Environment variable name for the U value          | `U`                        |
-| `env[1].value`             | Environment variable value for the U value         | `<your-U-value>`           |
-| `imagePullSecrets[0].name` | Name of the secret for image pulling               | `<your-secret-name>`       |
+| Parameter                  | Description                                         | Default              |
+|----------------------------|-----------------------------------------------------|----------------------|
+| `image.repository`         | Image repository                                    | `<your-ecr>`         |
+| `image.pullPolicy`         | Image pull policy                                   | `IfNotPresent`       |
+| `image.tag`                | Image tag (defaults to Chart's `appVersion`)        | `latest`             |
+| `service.type`             | Kubernetes Service type                             | `ClusterIP`          |
+| `service.port`             | Kubernetes Service port                             | `5432`               |
+| `env[0].name`              | Environment variable name for the password          | `PASSWORD`           |
+| `env[0].value`             | Environment variable value for the password         | `<your-password>`    |
+| `env[1].name`              | Environment variable name for the U value           | `U`                  |
+| `env[1].value`             | Environment variable value for the U value          | `<your-U-value>`     |
+| `env[2].name`              | Environment variable name for the clone UUID value  | `UUID`               |
+| `env[2].value`             | Environment variable value for the clone UUID value | `<your-UUID-value>`  |
+| `imagePullSecrets[0].name` | Name of the secret for image pulling                | `<your-secret-name>` |
+| `storage.size`             | Size of the volume                                  | `<your-secret-name>` |
+| `storage.storageClassName` | Name of the storage class to provision the volumes  | `<your-secret-name>` |
 
 For more information on configuring the `imagePullSecrets`, especially when using AWS ECR, see the [Configuring Image Pull Secret for AWS ECR](#configuring-image-pull-secret-for-aws-ecr) section below.
 

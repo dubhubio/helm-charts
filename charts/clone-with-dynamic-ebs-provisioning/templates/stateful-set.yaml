@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "dubhub-clone-chart.fullname" . }}
+spec:
+  serviceName: {{ include "dubhub-clone-chart.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "dubhub-clone-chart.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "dubhub-clone-chart.name" . }}
+    spec:
+      imagePullSecrets:
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+      initContainers:
+      - name: volume-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 102:104 /var/lds/clones && chmod -R 770 /var/lds/clones']
+        volumeMounts:
+        - name: data
+          mountPath: /var/lds/clones
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+          {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /var/lds/clones
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "{{ .Values.storage.size }}"
+        storageClassName: "{{ .Values.storage.storageClassName }}"

@@ -1,0 +1,25 @@
+replicaCount: 1
+
+image:
+  repository: "<your-image-repository>"
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 5432
+
+env:
+  - name: PASSWORD
+    value: "<your-password>"
+  - name: U
+    value: "<your-U-value>"
+  - name: UUID
+    value: ""
+
+imagePullSecrets:
+  - name: "<your-secret-name>"
+
+storage:
+  size: "100Gi"
+  storageClassName: "ebs-sc-dubhub" # matches the storage class name under configs/storage-class.yaml, if an existing storage class is used instead update this to reflect the class name

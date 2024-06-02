@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "dubhub-clone-chart.fullname" . }}
 spec:
+  serviceName: {{ include "dubhub-clone-chart.fullname" . }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -20,9 +21,20 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 5432
+            - containerPort: {{ .Values.service.port }}
           env:
             {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
+          volumeMounts:
+          - name: sql-scripts
+            mountPath: /docker-entrypoint-initdb.d
+          lifecycle:
+            postStart:
+              exec:
+                command: ["sh", "-c", "until pg_isready -h localhost -p {{ .Values.service.port }}; do sleep 2; done; psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql"]
+      volumes:
+        - name: sql-scripts
+          configMap:
+            name: {{ include "dubhub-clone-chart.fullname" . }}-sql-scripts

@@ -1,5 +1,5 @@
 apiVersion: v2
-name: dubhub-clone-chart
+name: dubhub-clone
 description: A Helm chart to run a dubhub clone
 type: application
 version: 0.1.0

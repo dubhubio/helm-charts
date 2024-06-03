@@ -37,6 +37,16 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/lds/clones
+        - name: sql-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        lifecycle:
+          postStart:
+            exec:
+              command: ["sh", "-c", "until pg_isready -h localhost -p {{ .Values.service.port }}; do sleep 2; done; psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql"]
+      volumes:
+        - name: sql-scripts
+          configMap:
+            name: {{ include "dubhub-clone-chart.fullname" . }}-sql-scripts
   volumeClaimTemplates:
     - metadata:
         name: data

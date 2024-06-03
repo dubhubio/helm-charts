@@ -86,4 +86,8 @@ To configure the chart with custom values, you can:
     helm install my-release ./clone -f my-values.yaml
     ```
 
+## Running Custom Initialization Commands
+
+Any additional SQL commands that are required to run after the clone is up (for example, creating a database) can be updated in the configmap.yaml file under the init_clone.sql section.
+
 For more information on configuring the Helm chart, refer to the Helm chart documentation.

@@ -33,7 +33,7 @@ spec:
           lifecycle:
             postStart:
               exec:
-                command: ["sh", "-c", "until pg_isready -h localhost -p {{ .Values.service.port }}; do sleep 2; done; psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql"]
+                command: ["sh", "-c", "timeout 300 sh -c 'until pg_isready -h localhost -p 5432; do sleep 2; done; psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql'"]
       volumes:
         - name: sql-scripts
           configMap:

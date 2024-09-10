@@ -16,6 +16,15 @@ env:
     value: "<your-U-value>"
   - name: UUID
     value: ""
+  - name: BACKUP_SCHEDULE
+    value: "0 0 * * *"
+  - name: BACKUP_DIR
+    value: "/dubhub/backups"
+  - name: MAX_BACKUPS
+    value: 1
+  - name: SPACE_USAGE_MIN_PERCENT
+    value: 10
+
 
 imagePullSecrets:
   - name: "<your-secret-name>"

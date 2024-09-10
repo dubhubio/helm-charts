@@ -27,22 +27,30 @@ This command removes all the Kubernetes components associated with the chart and
 
 The following table lists the configurable parameters of the `dubhub-clone` chart and their default values.
 
-| Parameter                  | Description                                         | Default              |
-|----------------------------|-----------------------------------------------------|----------------------|
-| `image.repository`         | Image repository                                    | `<your-ecr>`         |
-| `image.pullPolicy`         | Image pull policy                                   | `IfNotPresent`       |
-| `image.tag`                | Image tag (defaults to Chart's `appVersion`)        | `latest`             |
-| `service.type`             | Kubernetes Service type                             | `ClusterIP`          |
-| `service.port`             | Kubernetes Service port                             | `5432`               |
-| `env[0].name`              | Environment variable name for the password          | `PASSWORD`           |
-| `env[0].value`             | Environment variable value for the password         | `<your-password>`    |
-| `env[1].name`              | Environment variable name for the U value           | `U`                  |
-| `env[1].value`             | Environment variable value for the U value          | `<your-U-value>`     |
-| `env[2].name`              | Environment variable name for the clone UUID value  | `UUID`               |
-| `env[2].value`             | Environment variable value for the clone UUID value | `<your-UUID-value>`  |
-| `imagePullSecrets[0].name` | Name of the secret for image pulling                | `<your-secret-name>` |
-| `storage.size`             | Size of the volume                                  | `<your-secret-name>` |
-| `storage.storageClassName` | Name of the storage class to provision the volumes  | `<your-secret-name>` |
+| Parameter                  | Description                                                                         | Default                   |
+|----------------------------|-------------------------------------------------------------------------------------|---------------------------|
+| `image.repository`         | Image repository                                                                    | `<your-ecr>`              |
+| `image.pullPolicy`         | Image pull policy                                                                   | `IfNotPresent`            |
+| `image.tag`                | Image tag (defaults to Chart's `appVersion`)                                        | `latest`                  |
+| `service.type`             | Kubernetes Service type                                                             | `ClusterIP`               |
+| `service.port`             | Kubernetes Service port                                                             | `5432`                    |
+| `env[0].name`              | Environment variable name for the password                                          | `PASSWORD`                |
+| `env[0].value`             | Environment variable value for the password                                         | `<your-password>`         |
+| `env[1].name`              | Environment variable name for the U value                                           | `U`                       |
+| `env[1].value`             | Environment variable value for the U value                                          | `<your-U-value>`          |
+| `env[2].name`              | Environment variable name for the clone UUID                                        | `UUID`                    |
+| `env[2].value`             | Environment variable value for the clone UUID                                       | `<your-UUID-value>`       |
+| `env[3].name`              | Environment variable name for the clone backup schedule                             | `BACKUP_SCHEDULE`         |
+| `env[3].value`             | Environment variable value for the backup schedule in cron format (optional)        | `<backup-schedule>`       |
+| `env[4].name`              | Environment variable name for the clone backup directory                            | `BACKUP_DIR`              |
+| `env[4].value`             | Environment variable value for the clone backup directory (optional)                | `/dubhub/backups`         |
+| `env[5].name`              | Environment variable name for the number of backups that are saved                  | `MAX_BACKUPS`             |
+| `env[5].value`             | Environment variable value for the number of backups that are saved (optional)      | `<num-of-backups>`        |
+| `env[6].name`              | Environment variable name for monitoring available space                            | `SPACE_USAGE_MIN_PERCENT` |
+| `env[6].value`             | Environment variable value for the min amount of available space allowed (optional) | `<min-usage-percent>`     |
+| `imagePullSecrets[0].name` | Name of the secret for image pulling                                                | `<your-secret-name>`      |
+| `storage.size`             | Size of the volume                                                                  | `<volume-size>`           |
+| `storage.storageClassName` | Name of the storage class to provision the volumes                                  | `<storage-class-name>`    |
 
 For more information on configuring the `imagePullSecrets`, especially when using AWS ECR, see the [Configuring Image Pull Secret for AWS ECR](#configuring-image-pull-secret-for-aws-ecr) section below.
 

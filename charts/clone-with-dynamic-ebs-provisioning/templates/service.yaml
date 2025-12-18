@@ -5,7 +5,7 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: 5432
+    - port: {{ include "dubhub-clone-chart.dbPort" . }}
+      targetPort: {{ include "dubhub-clone-chart.dbPort" . }}
   selector:
     app: {{ include "dubhub-clone-chart.name" . }}

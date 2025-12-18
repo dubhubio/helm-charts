@@ -1,5 +1,8 @@
 replicaCount: 1
 
+# Database type: "postgres" or "mysql"
+dbType: postgres
+
 image:
   repository: "<your-image-repository>"
   pullPolicy: IfNotPresent
@@ -7,7 +10,11 @@ image:
 
 service:
   type: ClusterIP
-  port: 5432
+  # Default port: 5432 for postgres, 3306 for mysql (auto-selected if not specified)
+  # port: 5432
+
+# Shared memory size for database operations
+shmSize: 128Mi
 
 env:
   - name: PASSWORD

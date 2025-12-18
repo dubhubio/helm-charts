@@ -60,3 +60,38 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Get the database port based on dbType
+*/}}
+{{- define "dubhub-clone-chart.dbPort" -}}
+{{- if .Values.service.port }}
+{{- .Values.service.port }}
+{{- else if eq .Values.dbType "mysql" }}
+{{- 3306 }}
+{{- else }}
+{{- 5432 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Get the database readiness check command
+*/}}
+{{- define "dubhub-clone-chart.readinessCommand" -}}
+{{- if eq .Values.dbType "mysql" }}
+until mysqladmin ping -h 127.0.0.1 -u root --silent 2>/dev/null; do sleep 2; done
+{{- else }}
+until pg_isready -h localhost -p 5432; do sleep 2; done
+{{- end }}
+{{- end }}
+
+{{/*
+Get the database init command
+*/}}
+{{- define "dubhub-clone-chart.initCommand" -}}
+{{- if eq .Values.dbType "mysql" }}
+mysql -h 127.0.0.1 -u root < /docker-entrypoint-initdb.d/init_clone.sql
+{{- else }}
+psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql
+{{- end }}
+{{- end }}

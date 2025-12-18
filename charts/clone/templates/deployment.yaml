@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: {{ include "dubhub-clone-chart.fullname" . }}
 spec:
-  serviceName: {{ include "dubhub-clone-chart.fullname" . }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -20,8 +19,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: {{ include "dubhub-clone-chart.dbPort" . }}
           env:
             {{- range .Values.env }}
             - name: {{ .name }}
@@ -30,11 +30,17 @@ spec:
           volumeMounts:
           - name: sql-scripts
             mountPath: /docker-entrypoint-initdb.d
+          - name: dshm
+            mountPath: /dev/shm
           lifecycle:
             postStart:
               exec:
-                command: ["sh", "-c", "timeout 300 sh -c 'until pg_isready -h localhost -p 5432; do sleep 2; done; psql -h localhost -U postgres -d postgres -f /docker-entrypoint-initdb.d/init_clone.sql'"]
+                command: ["sh", "-c", "timeout 300 sh -c '{{ include "dubhub-clone-chart.readinessCommand" . }}; {{ include "dubhub-clone-chart.initCommand" . }}'"]
       volumes:
         - name: sql-scripts
           configMap:
             name: {{ include "dubhub-clone-chart.fullname" . }}-sql-scripts
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.shmSize }}

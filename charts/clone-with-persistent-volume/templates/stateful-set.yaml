@@ -20,8 +20,9 @@ spec:
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
-        - containerPort: 5432
+        - containerPort: {{ include "dubhub-clone-chart.dbPort" . }}
         env:
           {{- range .Values.env }}
           - name: {{ .name }}
@@ -30,6 +31,22 @@ spec:
         volumeMounts:
         - name: "{{ .Values.persistentVolume.name }}"
           mountPath: /var/lds/clones
+        - name: dshm
+          mountPath: /dev/shm
+        - name: sql-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        lifecycle:
+          postStart:
+            exec:
+              command: ["sh", "-c", "timeout 300 sh -c '{{ include "dubhub-clone-chart.readinessCommand" . }}; {{ include "dubhub-clone-chart.initCommand" . }}'"]
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.shmSize }}
+        - name: sql-scripts
+          configMap:
+            name: {{ include "dubhub-clone-chart.fullname" . }}-sql-scripts
   volumeClaimTemplates:
     - metadata:
         name: "{{ .Values.persistentVolume.name }}"

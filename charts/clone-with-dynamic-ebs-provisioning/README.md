@@ -3,8 +3,10 @@
 Deploy a DubHub clone on Kubernetes to start a database clone from a DubHub snapshot image.
 
 This chart:
+- Supports both PostgreSQL and MySQL databases
 - Pulls a Docker clone from ECR
-- Runs the clone container and exposes the database port (default: 5432)
+- Runs the clone container and exposes the database port (default: 5432 for PostgreSQL, 3306 for MySQL)
+- Mounts shared memory (`/dev/shm`) for database operations
 - Optionally runs post-startup SQL if required (e.g., create DBs/schemas/users)
 
 ## Prerequisites
@@ -54,8 +56,10 @@ The following table lists the configurable parameters of the `dubhub-clone` char
 | `image.repository`         | Image repository                                                                                 |                       |
 | `image.pullPolicy`         | Image pull policy                                                                                | `IfNotPresent`        |
 | `image.tag`                | Image tag                                                                                        | `latest`              |
+| `dbType`                   | Database type: `postgres` or `mysql`                                                             | `postgres`            |
 | `service.type`             | Kubernetes Service type                                                                          | `ClusterIP`           |
-| `service.port`             | Kubernetes Service port                                                                          | `5432`                |
+| `service.port`             | Kubernetes Service port (auto-detected based on dbType if not specified)                         | `5432`/`3306`         |
+| `shmSize`                  | Shared memory size for database operations                                                       | `128Mi`               |
 | `env[0].name`              | Environment variable name for the encryption password defined when the Dub was created           | `PASSWORD`            |
 | `env[0].value`             | Environment variable value for the encryption password stored as a secret                        |                       |
 | `env[1].name`              | Environment variable name for the U value                                                        | `U`                   |
@@ -84,8 +88,10 @@ create a secret with the encryption password:
 kubectl create secret generic <my-secret-name> --from-literal=password=<encryption-password>
 ```
 
-example values.yaml:
+example values.yaml for PostgreSQL:
 ```yaml
+dbType: postgres
+
 image:
   repository: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repository-name>
   tag: "latest"
@@ -93,7 +99,8 @@ image:
 
 service:
   type: ClusterIP
-  port: 5432
+
+shmSize: 128Mi
 
 env:
   - name: PASSWORD
@@ -106,7 +113,33 @@ env:
 
 imagePullSecrets:
   - name: <my-image-pull-secret-name>
+```
 
+example values.yaml for MySQL:
+```yaml
+dbType: mysql
+
+image:
+  repository: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repository-name>
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+
+shmSize: 128Mi
+
+env:
+  - name: PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: <my-secret-name>
+        key: password
+  - name: U
+    value: "<user-value>"
+
+imagePullSecrets:
+  - name: <my-image-pull-secret-name>
 ```
 
 

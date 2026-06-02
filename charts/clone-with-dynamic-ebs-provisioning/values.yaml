@@ -39,3 +39,15 @@ imagePullSecrets:
 storage:
   size: "100Gi"
   storageClassName: "ebs-sc-dubhub" # matches the storage class name under configs/storage-class.yaml, if an existing storage class is used instead update this to reflect the class name
+
+# Temporary mechanism to patch binaries in /dubhub/bin/ from files staged on the PVC.
+# Place the replacement files at <PVC root>/<pvcSubPath>/<filename> and they will be
+# copied into /dubhub/bin/ on every pod start (durable across restarts).
+# Disable once a new image containing the fix is released.
+binPatch:
+  enabled: false
+  pvcSubPath: "patch"
+  files:
+    - launcher
+    - libgenie.so
+    - lds

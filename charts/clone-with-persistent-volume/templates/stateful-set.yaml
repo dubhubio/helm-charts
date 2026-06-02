@@ -17,6 +17,48 @@ spec:
         {{- range .Values.imagePullSecrets }}
         - name: {{ .name }}
         {{- end }}
+      {{- if .Values.binPatch.enabled }}
+      initContainers:
+      - name: bin-patch
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          runAsUser: 0
+        command:
+        - sh
+        - -c
+        - |
+          set -eu
+          # Seed the shared bin dir with the image's original /dubhub/bin contents.
+          # Use tar so we preserve modes/symlinks without trying to chown/chtime
+          # the destination mount root (which fails for non-root users).
+          # Run as root so tar can preserve the original UIDs/GIDs and modes from
+          # /dubhub/bin (otherwise the main container's user can't exec its own bins).
+          tar -C /dubhub/bin -cf - . | tar -C /mnt/dubhub-bin -xpf -
+          # Overlay any patch files staged on the PVC
+          if [ -d /patch ]; then
+            for f in {{ .Values.binPatch.files | join " " }}; do
+              if [ -f "/patch/$f" ]; then
+                echo "Applying patch: $f"
+                cp -f "/patch/$f" "/mnt/dubhub-bin/$f"
+                # Match owner/mode of the image's original file so the main
+                # container's user can read/exec it.
+                if [ -e "/dubhub/bin/$f" ]; then
+                  chown --reference="/dubhub/bin/$f" "/mnt/dubhub-bin/$f"
+                  chmod --reference="/dubhub/bin/$f" "/mnt/dubhub-bin/$f"
+                else
+                  chmod 0755 "/mnt/dubhub-bin/$f"
+                fi
+              fi
+            done
+          fi
+        volumeMounts:
+        - name: dubhub-bin
+          mountPath: /mnt/dubhub-bin
+        - name: "{{ .Values.persistentVolume.name }}"
+          mountPath: /patch
+          subPath: {{ .Values.binPatch.pvcSubPath }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -35,6 +77,10 @@ spec:
           mountPath: /dev/shm
         - name: sql-scripts
           mountPath: /docker-entrypoint-initdb.d
+        {{- if .Values.binPatch.enabled }}
+        - name: dubhub-bin
+          mountPath: /dubhub/bin
+        {{- end }}
         lifecycle:
           postStart:
             exec:
@@ -47,11 +93,18 @@ spec:
         - name: sql-scripts
           configMap:
             name: {{ include "dubhub-clone-chart.fullname" . }}-sql-scripts
+        {{- if .Values.binPatch.enabled }}
+        - name: dubhub-bin
+          emptyDir: {}
+        {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: "{{ .Values.persistentVolume.name }}"
       spec:
         accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.persistentVolume.storageClassName }}
+        storageClassName: "{{ .Values.persistentVolume.storageClassName }}"
+        {{- end }}
         resources:
           requests:
             storage: "{{ .Values.persistentVolume.size }}"

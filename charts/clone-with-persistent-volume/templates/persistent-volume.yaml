@@ -1,3 +1,4 @@
+{{- if .Values.persistentVolume.create -}}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -12,3 +13,4 @@ spec:
   awsElasticBlockStore:
     volumeID: "{{ .Values.persistentVolume.awsElasticBlockStore.volumeID }}"
     fsType: "{{ .Values.persistentVolume.awsElasticBlockStore.fsType }}"
+{{- end }}
